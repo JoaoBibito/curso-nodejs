@@ -51,9 +51,17 @@ class MongoDB extends ICrud {
     connection.once("open", () => console.log("Database rodando!!"));
     this.defineModel();
   }
-  async create(item) {
-    const resultCadastrar = await this._herois.createsad(item);
-    console.log("result cadastrar", resultCadastrar);
+  create(item) {
+    return this._herois.create(item);
+  }
+  read(item, skip = 0, limit = 10) {
+    return this._herois.find(item).skip(skip).limit(limit);
+  }
+  update(id, item) {
+    return this._herois.updateOne({_id: id}, {$set: item});
+  }
+  delete(id) {
+    return this._herois.deleteOne({_id: id});
   }
 }
 
