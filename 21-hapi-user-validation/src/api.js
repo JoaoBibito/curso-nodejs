@@ -4,11 +4,13 @@ const Context = require("./db/strategies/base/contextStrategy");
 const HeroiSchema = require("./db/strategies/mongodb/schemas/heroisSchema");
 const HeroRoutes = require("./routes/heroRoutes");
 const AuthRoutes = require("./routes/authRoutes");
-
+const Postgres = require("./db/strategies/postgres/postgres")
+const usuarioSchema=require("./db/strategies/postgres/schemas/usuarioSchema")
 const HapiJwt = require("hapi-auth-jwt2")
 const HapiSwagger = require("hapi-swagger")
 const Vision= require("vision")
-const Inert = require("inert")
+const Inert = require("inert");
+const UsuarioSchema = require("./db/strategies/postgres/schemas/usuarioSchema");
 const JWT_SECRET = "MEU_SEGREDO_123"
 
 const app = new Hapi.Server({
@@ -22,6 +24,10 @@ function mapRoutes(instance, methods) {
 async function main() {
   const connection = MongoDB.connect();
   const context = new Context(new MongoDB(connection, HeroiSchema));
+  const connectionpostgres = await Postgres.connect()
+  const model = await Postgres.defineModel(connectionpostgres,UsuarioSchema)
+  const contextPostgres = new Context(new Postgres(connectionpostgres,model))
+
   const swaggerOptions={
     info:{
       title:"API Herois - #CursoNodeBR",
@@ -43,7 +49,16 @@ app.auth.strategy('jwt','jwt',{
   // options:{
   //   expireIn:20
   // }
-  validate:(dado,request)=>{
+  validate:async (dado,request)=>{
+    const [result] = await contextPostgres.read({
+      username:dado.username.toLowerCase(),
+      id:dado.id
+    })
+    if(!result){
+      return{
+        isValid:false
+      }
+    }
     //verifica no banco se usuario esta ativo
     //verifica no banco se usuario continua pagando
     return{
@@ -54,10 +69,9 @@ app.auth.strategy('jwt','jwt',{
 app.auth.default("jwt")
   app.route([
     ...mapRoutes(new HeroRoutes(context), HeroRoutes.methods()),
-    ...mapRoutes(new AuthRoutes(JWT_SECRET), AuthRoutes.methods())
+    ...mapRoutes(new AuthRoutes(JWT_SECRET,contextPostgres), AuthRoutes.methods())
   ]);
   await app.start();
-  console.log("Routes", app.info.route)
   console.log("Servidor rodando na porta ", app.info.port);
 
   return app;
