@@ -37,16 +37,36 @@ class Postgres extends ICrud {
     return this._schema.findAll({where: item, raw: true});
   }
   static async connect() {
+    const SSL_DB = process.env.SSL_DB === 'true' ? true : undefined
+    const SSL_DB_REJECT = process.env.SSL_DB_REJECT === 'false' ? false : undefined
+    
+    let dialectOptions = {}
+    if (SSL_DB) {
+        dialectOptions = {
+            ssl: {
+                require: SSL_DB,
+                rejectUnauthorized: SSL_DB_REJECT,
+            }
+        };
+    };
+
     const connection = new sequelize(process.env.POSTGRES_URL, {
-      quoteIdentifiers: false,
-      operatorsAliases: false,
-      logging: false,
-      ssl:process.env.SSL_DB,
-      dialectOptions:{
-        ssl:process.env.SSL_DB
-      }
+        quoteIdentifiers: false,
+        logging: false,
+        dialectOptions,
     });
+    
     return connection;
+    // const connection = new sequelize(process.env.POSTGRES_URL, {
+    //   quoteIdentifiers: false,
+    //   operatorsAliases: false,
+    //   logging: false,
+    //   ssl:process.env.SSL_DB,
+    //   dialectOptions:{
+    //     ssl:process.env.SSL_DB
+    //   }
+    // });
+    // return connection;
   }
 }
 module.exports = Postgres;

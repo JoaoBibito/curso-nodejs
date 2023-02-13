@@ -1,5 +1,5 @@
 {
-  "name": "08-multi-db-postgres",
+  "name": "13-api-estrutura",
   "version": "1.0.0",
   "description": "docker run \\\r  --name postgres\\\r  -e POSTGRES_USER=JoaoBibito\\\r  -e POSTGRES_PASSWORD=senha\\\r  -e POSTGRES_DB=heros \\\r  -p 5432:5432\\\r  -d `\r postgres",
   "main": "index.js",

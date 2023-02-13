@@ -10,8 +10,6 @@ config({
   path:configPath
 })
 
-console.log("Mngoooo", process.env.MONGODB_URL)
-
 const Hapi = require("hapi");
 const MongoDB = require("./db/strategies/mongodb/mongodb");
 const Context = require("./db/strategies/base/contextStrategy");
